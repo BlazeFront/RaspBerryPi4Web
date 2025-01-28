@@ -396,7 +396,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                     const downloadTd = element.closest('td');
                     const parentRow = downloadTd.closest('tr');
                     const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
-                    checkIcon.className = ".fa-solid fa-square-check";
+                    checkIcon.className = "fa-solid fa-square-check";
 
                     // Handle the binary file response (MP3 file)
                     var disposition = xhr.getResponseHeader('Content-Disposition');
