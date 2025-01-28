@@ -37,14 +37,10 @@ if (isset($data['url']) && isset($data['downloaded'])) {
         // Execute yt-dlp and capture the output and errors
         $command = "yt-dlp --no-cache-dir --get-title " . escapeshellarg($cleanUrl);
         $videoTitle = shell_exec($command);
-        
-        // Capture any errors in the output
-        $output = shell_exec("yt-dlp --no-cache-dir --get-title " . escapeshellarg($cleanUrl) . " 2>&1");
-        $errorOutput = shell_exec("yt-dlp --no-cache-dir --get-title " . escapeshellarg($cleanUrl) . " 2>&1");
 
         // Check for errors in yt-dlp execution
         if ($videoTitle === null || trim($videoTitle) === "") {
-            error_log("yt-dlp command failed: " . $errorOutput);
+            error_log("yt-dlp command failed");
             $videoTitle = "Unknown Title";
         }
 
