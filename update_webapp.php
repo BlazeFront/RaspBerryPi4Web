@@ -1,6 +1,6 @@
 <?php
 // Set the secret key (same as in the GitHub webhook settings)
-$secret = "your_secret_key";
+$secret = "Mr53st52";
 
 // Get the payload and signature from GitHub
 $payload = file_get_contents("php://input");
@@ -14,7 +14,7 @@ if (!hash_equals($hash, $signature)) {
 }
 
 // Execute the deployment script
-exec("sudo /var/www/update_webapp.sh 2>&1", $output, $return_var);
+exec("sudo /var/www/html/RaspBerryPi4Web/update_webapp.sh 2>&1", $output, $return_var);
 
 if ($return_var === 0) {
     echo "Deployment successful: " . implode("\n", $output);
