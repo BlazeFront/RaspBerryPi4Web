@@ -16,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($username === $valid_username && password_verify($password, $valid_password)) {
         $_SESSION['logged_in'] = true;
+        // Update yt-dlp to the latest version
+        shell_exec("yt-dlp -U");
         header('Location: index.php'); // Redirect to your main page
         exit();
     } else {

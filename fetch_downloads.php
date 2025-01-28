@@ -1,6 +1,4 @@
 <?php
-// Update yt-dlp to the latest version
-shell_exec("yt-dlp -U");
 // Database connection
 $servername = "localhost";
 $username = "root";
