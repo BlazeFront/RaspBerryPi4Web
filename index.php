@@ -395,9 +395,9 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                     element.innerHTML = originalIcon;
                     const downloadTd = element.closest('td');
                     const parentRow = downloadTd.closest('tr');
-                    const checkIcon = parentRow.querySelector('.fa-regular.fa-square-check');
-                    checkIcon.innerHTML = ".fa-solid.fa-square-check";
-                    
+                    const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
+                    checkIcon.className = ".fa-solid fa-square-check";
+
                     // Handle the binary file response (MP3 file)
                     var disposition = xhr.getResponseHeader('Content-Disposition');
                     var filename = 'downloaded.mp3'; // Default filename
