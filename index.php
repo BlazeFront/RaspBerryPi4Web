@@ -394,9 +394,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                 if (xhr.status === 200) {
                     element.innerHTML = originalIcon;
                     const downloadTd = element.closest('td');
-                    const parentRow = downloadTd.closest('tr');
-                    const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
-                    checkIcon.innerHTML = '<i class="fa-solid fa-square-check"></i>';
+                    const IconParent = downloadTd.closest('tr');
+                    IconParent.innerHTML = '<i class="fa-solid fa-square-check"></i>';
 
                     // Handle the binary file response (MP3 file)
                     var disposition = xhr.getResponseHeader('Content-Disposition');
