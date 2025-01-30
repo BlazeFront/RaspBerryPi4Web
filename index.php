@@ -165,7 +165,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         }
 
         .error {
-            color: rgb(167, 30, 30);
+            color: rgb(222, 71, 71);
         }
 
         #alignRight {
