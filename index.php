@@ -164,10 +164,10 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             cursor: pointer;
         }
 
-        .failed {
-            color: rgb(167, 30, 30);
+        .error {
+            color: rgb(222, 71, 71);
         }
-
+        
         #alignRight {
             position: fixed;
             right: 20px;
