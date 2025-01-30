@@ -81,6 +81,19 @@ if (file_exists($outputFile)) {
     header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
     header('Content-Length: ' . filesize($outputFile));
     readfile($outputFile);
+
+    // Update database to mark download as completed
+    $updateSql = "UPDATE downloads SET downloaded = 1 WHERE id = ?";
+    $updateStmt = $conn->prepare($updateSql);
+
+    if ($updateStmt) {
+        $updateStmt->bind_param("i", $id);
+        $updateStmt->execute();
+        $updateStmt->close();
+    } else {
+        error_log("Failed to prepare update statement: " . $conn->error);
+    }
+    
     exit();
 }
 
