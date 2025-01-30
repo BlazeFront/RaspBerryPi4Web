@@ -417,7 +417,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                     link.click();
                 }
                 else {
-                    element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fa-solid fa-download failed");
+                    element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fa-solid fa-download error");
                     alert('Error downloading file with ID: ' + id);
                 }
 
