@@ -373,72 +373,88 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 }
 
 
+// Updated markDownloaded function for each entry
+function markDownloaded(id, element) {
+    if (!id || !element) {
+        return;
+    }
 
-        // Updated markDownloaded function for each entry
-        function markDownloaded(id, element) {
-            if (!id || !element) {
-                return;
-            }
-            // Track ongoing downloads
-            ongoingDownloads++;
-            if (element) {
-                var originalIcon = element.innerHTML; // Save the original icon
-                element.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'; // Set spinner icon
-            }
+    ongoingDownloads++;
+    var originalIcon = element.innerHTML; // Save the original icon
+    element.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'; // Set spinner icon
 
-            // Create the request to mark the download
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'mark_downloaded.php?id=' + id, true);
-            xhr.responseType = 'blob'; // Expect a binary file response
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    element.innerHTML = originalIcon;
-                    const downloadTd = element.closest('td');
-                    const parentRow = downloadTd.closest('tr');
-                    const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
-                    checkIcon.className = "fa-solid fa-square-check";
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'mark_downloaded.php?id=' + id, true);
+    xhr.responseType = 'blob'; // Expect a binary file response
 
-                    // Handle the binary file response (MP3 file)
-                    var disposition = xhr.getResponseHeader('Content-Disposition');
-                    var filename = 'downloaded.mp3'; // Default filename
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            // Restore the original icon
+            element.innerHTML = originalIcon;
 
-                    if (disposition && disposition.indexOf('filename=') !== -1) {
-                        var matches = disposition.match(/filename[^;=\n]*=([^;\n]*)/);
-                        if (matches.length > 1) {
-                            filename = matches[1].trim().replace(/["']/g, '');
-                        }
-                    }
+            // Update UI to show download completion
+            const downloadTd = element.closest('td');
+            const parentRow = downloadTd.closest('tr');
+            const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
+            checkIcon.className = "fa-solid fa-square-check";
 
-                    // Create a link to trigger the download
-                    var blob = new Blob([xhr.response], { type: 'audio/mpeg' });
-                    var link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = filename;
-                    link.click();
+            // Handle the binary file response (MP3 file)
+            var disposition = xhr.getResponseHeader('Content-Disposition');
+            var filename = 'downloaded.mp3'; // Default filename
+
+            if (disposition && disposition.indexOf('filename=') !== -1) {
+                var matches = disposition.match(/filename[^;=\n]*=([^;\n]*)/);
+                if (matches.length > 1) {
+                    filename = matches[1].trim().replace(/["']/g, '');
                 }
-                else {
-                    element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fa-solid fa-download failed");
-                    alert('Error downloading file with ID: ' + id);
-                }
-
-                ongoingDownloads--; // Decrement the ongoing download counter
-            };
-
-            xhr.onerror = function () {
-                element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fas fa-download failed");
-                ongoingDownloads--; // Decrement on error
-                alert('Error downloading file with ID: ' + id);
-            };
-
-            if (ongoingDownloads == 0) {
-                document.getElementById("reloadAll").classList = "fa-solid fa-rotate-right";
             }
 
-            xhr.send();
-            if (ongoingDownloads == 0) {
-                document.getElementById("reloadAll").classList = "fa-solid fa-rotate-right";
-            }
+            // Create a link to trigger the download
+            var blob = new Blob([xhr.response], { type: 'audio/mpeg' });
+            var link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        } else {
+            handleDownloadError(xhr, id, element, originalIcon);
         }
+
+        ongoingDownloads--; // Decrement the ongoing download counter
+        updateReloadIcon();
+    };
+
+    xhr.onerror = function () {
+        handleDownloadError(xhr, id, element, originalIcon);
+        ongoingDownloads--;
+        updateReloadIcon();
+    };
+
+    xhr.send();
+}
+
+// Function to handle download errors and display meaningful messages
+function handleDownloadError(xhr, id, element, originalIcon) {
+    element.innerHTML = '<i class="fa-solid fa-download error"></i>'; // Show failure icon
+
+    var errorMessage = 'Error downloading file with ID: ' + id;
+    if (xhr.response) {
+        var reader = new FileReader();
+        reader.onload = function () {
+            alert(errorMessage + "\n\nServer Response:\n" + reader.result);
+        };
+        reader.readAsText(xhr.response);
+    } else {
+        alert(errorMessage + "\n\nNo response from server.");
+    }
+}
+
+// Function to update reload button
+function updateReloadIcon() {
+    if (ongoingDownloads === 0) {
+        document.getElementById("reloadAll").classList = "fa-solid fa-rotate-right";
+    }
+}
+
 
         function openPhpMyAdmin() {
             window.open("http://localhost/phpmyadmin/index.php?route=/database/sql&db=downloads", "_blank");
