@@ -375,8 +375,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
 
         // Updated markDownloaded function for each entry
-        function markDownloaded(id, element) {
-            if (!id || !element) {
+        function markDownloaded(id, title, element) {
+            if (!id || !element || !title) {
                 return;
             }
             // Track ongoing downloads
@@ -388,7 +388,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
             // Create the request to mark the download
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'mark_downloaded.php?id=' + id, true);
+            xhr.open('GET', 'mark_downloaded.php?id=' + id + '&title=' + title, true);
             xhr.responseType = 'blob'; // Expect a binary file response
             xhr.onload = function () {
                 if (xhr.status === 200) {

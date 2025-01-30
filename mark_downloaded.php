@@ -21,6 +21,7 @@ if ($conn->connect_error) {
 
 // Get the video ID from the query string
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+$videoTitle = isset($_GET['title']) ? (int)$_GET['title'] : null;
 
 if (!$id) {
     error_log("Invalid ID parameter provided.");
@@ -66,15 +67,6 @@ if (!$videoId) {
 
 // Construct a clean YouTube URL
 $cleanUrl = "https://www.youtube.com/watch?v=" . $videoId;
-
-// Get the sanitized video title
-$videoTitle = shell_exec("yt-dlp --get-title " . escapeshellarg($cleanUrl));
-
-if (!$videoTitle) {
-    error_log("Failed to fetch video title for URL: " . $cleanUrl);
-    http_response_code(500);
-    die("Error: Unable to fetch video title.");
-}
 
 $videoTitle = trim($videoTitle);
 $safeTitle = preg_replace('/[\/:*?"<>|]/', '', $videoTitle);
