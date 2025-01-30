@@ -418,7 +418,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                 }
                 else {
                     element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fa-solid fa-download error");
-                    alert('Error downloading file with ID: ' + id);
+                    alert('Error downloading file with ID TEST: ' + id);
                 }
 
                 ongoingDownloads--; // Decrement the ongoing download counter
@@ -427,7 +427,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             xhr.onerror = function () {
                 element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fas fa-download error");
                 ongoingDownloads--; // Decrement on error
-                alert('Error downloading file with ID: ' + id);
+                alert('Error downloading file with ID TEST: ' + id);
             };
 
             if (ongoingDownloads == 0) {
