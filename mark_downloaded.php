@@ -2,7 +2,7 @@
 // Database connection
 $servername = "localhost";
 $username = "root";
-$password = "Mr53st52!1337";
+$password = "";
 $dbname = "downloads";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -35,11 +35,10 @@ if ($id) {
         $stmt->bind_result($url);
         $stmt->fetch();
 
-        // Parse the URL and clean it to keep only the video ID
+        // Parse the URL and extract the video ID
         $parsedUrl = parse_url($url);
         parse_str($parsedUrl['query'] ?? '', $queryParams);
 
-        // Extract the `v` parameter (video ID)
         $videoId = $queryParams['v'] ?? null;
 
         if (!$videoId) {
@@ -49,12 +48,12 @@ if ($id) {
             exit();
         }
 
-        // Construct a clean URL using only the video ID
+        // Construct a clean YouTube URL
         $cleanUrl = "https://www.youtube.com/watch?v=" . $videoId;
 
         // Get the sanitized video title
-        $videoTitle = shell_exec("yt-dlp --no-cache-dir --get-title " . escapeshellarg($cleanUrl));
-        if ($videoTitle === null || $videoTitle === "") {
+        $videoTitle = shell_exec("yt-dlp --get-title " . escapeshellarg($cleanUrl));
+        if (!$videoTitle) {
             error_log("Failed to fetch video title for URL: " . $cleanUrl);
             http_response_code(500);
             echo "Error: Unable to fetch video title.";
@@ -66,55 +65,56 @@ if ($id) {
         // Path for the output MP3 file
         $outputFile = "downloads/" . $safeTitle . ".mp3";
 
+        // Check if the file already exists
+        if (file_exists($outputFile)) {
+            // Serve the MP3 file immediately
+            header('Content-Type: audio/mpeg');
+            header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
+            header('Content-Length: ' . filesize($outputFile));
+            readfile($outputFile);
+            exit();
+        }
+
         // Create the downloads directory if it doesn't exist
         if (!is_dir('downloads')) {
             mkdir('downloads', 0777, true);
         }
 
-        // Download the MP3 if it doesn't exist
+        // Download the MP3
+        $command = sprintf(
+            'yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 -o %s %s',
+            escapeshellarg($outputFile),
+            escapeshellarg($cleanUrl)
+        );
+        shell_exec($command);
+
+        // Verify the file was created
         if (!file_exists($outputFile)) {
-            $command = sprintf(
-                'yt-dlp --no-cache-dir -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 -o %s %s',
-                escapeshellarg($outputFile),
-                escapeshellarg($cleanUrl)
-            );
-            $result = shell_exec($command);
-
-            // Check for errors in shell execution
-            if (!file_exists($outputFile)) {
-                error_log("MP3 file could not be created. Command: " . $command);
-                http_response_code(500);
-                echo "Error: MP3 file could not be created.";
-                exit();
-            }
-        }
-
-        // Check if the MP3 exists
-        if (file_exists($outputFile)) {
-            // Mark the download as completed in the database
-            $updateSql = "UPDATE downloads SET downloaded = 1 WHERE id = ?";
-            $updateStmt = $conn->prepare($updateSql);
-
-            if ($updateStmt) {
-                $updateStmt->bind_param("i", $id);
-                $updateStmt->execute();
-                $updateStmt->close();
-            } else {
-                error_log("Failed to prepare update statement: " . $conn->error);
-            }
-
-            // Serve the MP3 file for download
-            header('Content-Type: audio/mpeg');
-            header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
-            header('Content-Length: ' . filesize($outputFile));
-            readfile($outputFile);
-
-            // Stop further execution
-            exit();
-        } else {
-            error_log("MP3 file could not be found after supposed download: " . $outputFile);
+            error_log("MP3 file could not be created. Command: " . $command);
+            http_response_code(500);
             echo "Error: MP3 file could not be created.";
+            exit();
         }
+
+        // Update database to mark download as completed
+        $updateSql = "UPDATE downloads SET downloaded = 1 WHERE id = ?";
+        $updateStmt = $conn->prepare($updateSql);
+
+        if ($updateStmt) {
+            $updateStmt->bind_param("i", $id);
+            $updateStmt->execute();
+            $updateStmt->close();
+        } else {
+            error_log("Failed to prepare update statement: " . $conn->error);
+        }
+
+        // Serve the MP3 file after downloading
+        header('Content-Type: audio/mpeg');
+        header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
+        header('Content-Length: ' . filesize($outputFile));
+        readfile($outputFile);
+
+        exit();
     } else {
         error_log("No video found with ID: " . $id);
         echo "No video found with ID: " . htmlspecialchars($id);
