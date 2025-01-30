@@ -425,7 +425,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             };
 
             xhr.onerror = function () {
-                element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fas fa-download failed");
+                element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fas fa-download error");
                 ongoingDownloads--; // Decrement on error
                 alert('Error downloading file with ID: ' + id);
             };
