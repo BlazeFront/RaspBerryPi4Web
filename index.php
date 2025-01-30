@@ -385,10 +385,11 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                 var originalIcon = element.innerHTML; // Save the original icon
                 element.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'; // Set spinner icon
             }
+            var encodedTitle = encodeURIComponent(title);  // Encode the title to handle special characters
 
             // Create the request to mark the download
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', 'mark_downloaded.php?id=' + id + '&title=' + title, true);
+            xhr.open('GET', 'mark_downloaded.php?id=' + id + '&title=' + encodedTitle, true);
             xhr.responseType = 'blob'; // Expect a binary file response
             xhr.onload = function () {
                 if (xhr.status === 200) {
