@@ -164,7 +164,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             cursor: pointer;
         }
 
-        .failed {
+        .error {
             color: rgb(167, 30, 30);
         }
 
