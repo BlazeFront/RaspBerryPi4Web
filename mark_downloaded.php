@@ -97,6 +97,9 @@ if (file_exists($outputFile)) {
     exit();
 }
 
+echo("URL: " . escapeshellarg($cleanUrl));
+echo("TITLE: " . escapeshellarg($outputFile));
+
 // Create the downloads directory if it doesn't exist
 if (!is_dir(__DIR__ . '/downloads')) {
     mkdir(__DIR__ . '/downloads', 0777, true);
