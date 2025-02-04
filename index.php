@@ -30,7 +30,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         .smoothscroll {
             position: fixed;
             bottom: 0;
-            min-height: 200px;
+            min-height: 130px;
             width: 100%;
             background: linear-gradient(rgb(0, 0, 0, 0),rgba(0, 0, 0, 0.85));
             z-index: 1000;
@@ -288,7 +288,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         window.addEventListener("scroll", function () {
             const element = document.querySelector(".smoothscroll");
             const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-            if (window.scrollY >= scrollableHeight - 80) {
+            if (window.scrollY >= scrollableHeight - 30) {
                 element.style.opacity = "0"; // Hide element
             } else {
                 element.style.opacity = "1"; // Show element
