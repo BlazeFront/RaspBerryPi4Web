@@ -30,9 +30,9 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         .smoothscroll {
             position: fixed;
             bottom: 0;
-            min-height: 400px;
+            min-height: 200px;
             width: 100%;
-            background: linear-gradient(rgb(0, 0, 0),rgba(0, 0, 0, 0));
+            background: linear-gradient(rgb(0, 0, 0, 0),rgba(0, 0, 0));
             z-index: 1000;
         }
 
