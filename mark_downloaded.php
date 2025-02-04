@@ -21,7 +21,7 @@ if ($conn->connect_error) {
 
 // Get the video ID from the query string
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
-$videoTitle = isset($_GET['title']) ? (String)$_GET['title'] : null;
+$videoTitle = isset($_GET['title']) ? (String)$_GET['title'] : "failed";
 
 if (!$id) {
     error_log("Invalid ID parameter provided.");
