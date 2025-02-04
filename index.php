@@ -34,6 +34,11 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             width: 100%;
             background: linear-gradient(rgb(0, 0, 0, 0),rgba(0, 0, 0));
             z-index: 1000;
+            transition: opacity 1s;
+        }
+
+        body:has(:nth-last-child(1):in-viewport(200px)) .smoothscroll {
+            opacity: 0;
         }
 
         .el {
