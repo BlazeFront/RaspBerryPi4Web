@@ -27,6 +27,15 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             background: hsl(0 0% 6%);
         }
 
+        .smoothscroll {
+            position: fixed;
+            bottom: 0;
+            min-height: 400px;
+            width: 100%;
+            background: linear-gradient(rgb(0, 0, 0),rgba(0, 0, 0, 0));
+            z-index: 1000;
+        }
+
         .el {
             z-index: 0;
             position: fixed;
@@ -221,6 +230,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     </style>
 </head>
 <body>
+    <div class="smoothscroll"></div>
     <div class="el"></div>
     <h1></h1>
     <div class="extra">
