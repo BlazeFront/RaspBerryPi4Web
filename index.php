@@ -386,7 +386,6 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                 element.innerHTML = '<i class="fa-solid fa-spinner fa-spin-pulse"></i>'; // Set spinner icon
             }
             var encodedTitle = encodeURIComponent(title);  // Encode the title to handle special characters
-            alert(encodedTitle);
 
             // Create the request to mark the download
             var xhr = new XMLHttpRequest();
