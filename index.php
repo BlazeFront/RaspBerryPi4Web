@@ -285,15 +285,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             fetchDownloads(); // Your existing fetch function to load downloads data
         };
 
-        window.addEventListener("scroll", function () {
-            const element = document.querySelector(".smoothscroll");
-            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-            if (window.scrollY >= scrollableHeight - 30) {
-                element.style.opacity = "0"; // Hide element
-            } else {
-                element.style.opacity = "1"; // Show element
-            }
-        });
+
 
         function fetchDownloads() {
             // Fetch the downloads immediately
