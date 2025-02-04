@@ -389,6 +389,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
             // Create the request to mark the download
             var xhr = new XMLHttpRequest();
+            // test
             xhr.open('GET', 'http://192.168.0.147:8090/RaspBerryPi4Web/mark_downloaded.php?id=' + id + '&title=' + encodedTitle, true);
             xhr.responseType = 'blob'; // Expect a binary file response
             xhr.onload = function () {
