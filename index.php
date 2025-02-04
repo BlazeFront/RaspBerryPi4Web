@@ -32,7 +32,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             bottom: 0;
             min-height: 200px;
             width: 100%;
-            background: linear-gradient(rgb(0, 0, 0, 0.85),rgba(0, 0, 0));
+            background: linear-gradient(rgb(0, 0, 0, 0),rgba(0, 0, 0, 0.85));
             z-index: 1000;
             transition: opacity 1s;
         }
