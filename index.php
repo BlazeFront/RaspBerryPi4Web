@@ -266,23 +266,6 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         let fetchInterval;
         let ongoingDownloads = 0; // Track the number of ongoing downloads
 
-        function copyPlaylistLink() {
-            if (!window.playlistLink || window.playlistLink.trim() === "") {
-                alert("No videos found to generate a playlist.");
-                return;
-            }
-
-            // Copy the link to clipboard
-            var tempInput = document.createElement('input');
-            tempInput.value = window.playlistLink;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-
-            alert("Playlist link copied to clipboard:\n" + window.playlistLink);
-        }
-
         function fetchTotalEntries() {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', 'count_entries.php', true); // The PHP file to count entries
@@ -321,27 +304,50 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             xhr.open('GET', 'fetch_downloads.php', true);
             xhr.onload = function () {
                 if (xhr.status === 200) {
-                    document.querySelector('tbody').innerHTML = xhr.responseText;
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        updateTable(response.tableRows); // Update the table with new rows
+                        window.playlistLink = response.playlistLink; // Store the playlist link globally
+                    } catch (error) {
+                        console.error("Error parsing JSON response: ", error);
+                    }
                 }
             };
             xhr.send();
         }
 
-        function copyToClipboard(url) {
-            // Create a temporary input element to copy the URL
+        function updateTable(rows) {
+            var tbody = document.querySelector('tbody');
+            tbody.innerHTML = ""; // Clear existing content
+
+            rows.forEach(row => {
+                var newRow = document.createElement("tr");
+                newRow.innerHTML = `
+                    <td class='remove-field' onclick='removeFromDatabase("${row.id}", this)'><i class='fa-solid fa-angles-left'></i></td>
+                    <td class='url-cell' onclick='copyToClipboard("${row.name}")'>${row.name}</td>
+                    <td class='icon-cell' style='cursor:pointer' onclick='copyToClipboard("${row.url}")'><i class='fa-regular fa-copy'></i></td>
+                    <td>${row.downloaded ? "<i style='cursor:pointer' class='fa-solid fa-square-check' onclick='toggleDownloaded(" + row.id + ", this)'></i>" : "<i class='fa-regular fa-square' onclick='toggleDownloaded(" + row.id + ", this)'></i>"}</td>
+                    <td class='icon-cell'><a href='${row.url}' target='_blank'><i class='fab fa-youtube'></i></a></td>
+                    <td value='${row.id}' class='download-icon'><a href='javascript:void(0);' onclick='markDownloaded(${row.id}, "${row.name}", this)'><i class='fas fa-download'></i></a></td>
+                `;
+                tbody.appendChild(newRow);
+            });
+        }
+
+        function copyPlaylistLink() {
+            if (!window.playlistLink || window.playlistLink.trim() === "") {
+                alert("No videos found to generate a playlist.");
+                return;
+            }
+
             var tempInput = document.createElement('input');
-            tempInput.value = url;
+            tempInput.value = window.playlistLink;
             document.body.appendChild(tempInput);
-            
-            // Select and copy the text
             tempInput.select();
             document.execCommand('copy');
-            
-            // Remove the temporary input element
             document.body.removeChild(tempInput);
-            
-            // Optionally, you can show a message or alert to indicate the link was copied
-            alert(url + ' copied to clipboard!');
+
+            alert("Playlist link copied to clipboard:\n" + window.playlistLink);
         }
 
         function markAllDownloaded(button) {
@@ -369,45 +375,43 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         }
 
         function downloadAllMissing(button) {
-    if (!confirm("Are you sure you want to download all missing entries?")) {
-        return;
-    }
+            if (!confirm("Are you sure you want to download all missing entries?")) {
+                return;
+            }
 
-    // Add loading spinner to button
-    button.classList = "fa-solid fa-spinner fa-spin-pulse";
+            // Add loading spinner to button
+            button.classList = "fa-solid fa-spinner fa-spin-pulse";
 
-    // Get all rows from the table
-    const rows = document.querySelectorAll('#downloads-table tbody tr');
-    if (rows.length === 0) {
-        alert("No entries found to download.");
-        button.classList = "fa-solid fa-circle-down"; // Reset button icon
-        return;
-    }
+            // Get all rows from the table
+            const rows = document.querySelectorAll('#downloads-table tbody tr');
+            if (rows.length === 0) {
+                alert("No entries found to download.");
+                button.classList = "fa-solid fa-circle-down"; // Reset button icon
+                return;
+            }
 
-    let missingDownloads = 0;
+            let missingDownloads = 0;
 
-    // Iterate over each row
-    rows.forEach((row) => {
-        const downloadedCell = row.querySelector('td:nth-child(4) i'); // Locate the "downloaded" column icon
-        const isDownloaded = downloadedCell.classList.contains('fa-square-check'); // Check if it's marked as downloaded
-        const id = row.querySelector('.download-icon').getAttribute('value').replace(/"/g, ''); // Extract the entry ID
-        const downloadElement = row.querySelector('.download-icon'); // Get the download element
+            // Iterate over each row
+            rows.forEach((row) => {
+                const downloadedCell = row.querySelector('td:nth-child(4) i'); // Locate the "downloaded" column icon
+                const isDownloaded = downloadedCell.classList.contains('fa-square-check'); // Check if it's marked as downloaded
+                const id = row.querySelector('.download-icon').getAttribute('value').replace(/"/g, ''); // Extract the entry ID
+                const downloadElement = row.querySelector('.download-icon'); // Get the download element
 
-        if (!isDownloaded && id) {
-            missingDownloads++;
-            markDownloaded(parseInt(id), downloadElement); // Process only missing downloads
+                if (!isDownloaded && id) {
+                    missingDownloads++;
+                    markDownloaded(parseInt(id), downloadElement); // Process only missing downloads
+                }
+            });
+
+            if (missingDownloads === 0) {
+                alert("No missing entries to download.");
+            }
+
+            // Reset the button icon after processing
+            button.classList = "fa-solid fa-circle-down";
         }
-    });
-
-    if (missingDownloads === 0) {
-        alert("No missing entries to download.");
-    }
-
-    // Reset the button icon after processing
-    button.classList = "fa-solid fa-circle-down";
-}
-
-
 
         // Updated markDownloaded function for each entry
         function markDownloaded(id, title, element) {
