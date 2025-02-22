@@ -357,15 +357,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                 alert("No videos found to generate a playlist.");
                 return;
             }
-
-            var tempInput = document.createElement('input');
-            tempInput.value = window.playlistLink;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-
-            alert("Playlist link copied to clipboard:\n" + window.playlistLink);
+            window.open(window.playlistLink);
         }
 
         function markAllDownloaded(button) {
