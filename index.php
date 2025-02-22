@@ -267,6 +267,23 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         let fetchInterval;
         let ongoingDownloads = 0; // Track the number of ongoing downloads
 
+        function copyToClipboard(url) {
+            // Create a temporary input element to copy the URL
+            var tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            
+            // Select and copy the text
+            tempInput.select();
+            document.execCommand('copy');
+            
+            // Remove the temporary input element
+            document.body.removeChild(tempInput);
+            
+            // Optionally, you can show a message or alert to indicate the link was copied
+            alert(url + ' copied to clipboard!');
+        }
+
         function fetchTotalEntries() {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', 'count_entries.php', true); // The PHP file to count entries
