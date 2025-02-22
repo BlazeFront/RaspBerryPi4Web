@@ -242,7 +242,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         <i class="fa-solid fa-database" onclick="openPhpMyAdmin()"></i>
         <i class="fa-solid fa-rotate-right" id="reloadAll" onclick="markAllDownloaded(this)"></i>
         <i class="fa-solid fa-circle-down" onclick="downloadAllMissing(this)"></i>
-        <i class="fa-solid fa-list-music" onclick="copyPlaylistLink()"></i>
+        <i class="fa-solid fa-circle-play" onclick="copyPlaylistLink()"></i>
         <i class="fa-solid fa-arrow-right-from-bracket" id="alignRight" onclick="logout()"></i>
     </div>
 
