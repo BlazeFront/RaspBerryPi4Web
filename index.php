@@ -242,6 +242,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         <i class="fa-solid fa-database" onclick="openPhpMyAdmin()"></i>
         <i class="fa-solid fa-rotate-right" id="reloadAll" onclick="markAllDownloaded(this)"></i>
         <i class="fa-solid fa-circle-down" onclick="downloadAllMissing(this)"></i>
+        <i class="fa-solid fa-list-music" onclick="copyPlaylistLink()"></i>
         <i class="fa-solid fa-arrow-right-from-bracket" id="alignRight" onclick="logout()"></i>
     </div>
 
@@ -264,6 +265,23 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     <script>
         let fetchInterval;
         let ongoingDownloads = 0; // Track the number of ongoing downloads
+
+        function copyPlaylistLink() {
+            if (!window.playlistLink || window.playlistLink.trim() === "") {
+                alert("No videos found to generate a playlist.");
+                return;
+            }
+
+            // Copy the link to clipboard
+            var tempInput = document.createElement('input');
+            tempInput.value = window.playlistLink;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            alert("Playlist link copied to clipboard:\n" + window.playlistLink);
+        }
 
         function fetchTotalEntries() {
             var xhr = new XMLHttpRequest();
