@@ -120,19 +120,41 @@ if (!file_exists($outputFile)) {
     die("Error: MP3 file could not be created.");
 }
 
-// Download the thumbnail image
-$thumbnailUrl = "https://img.youtube.com/vi/$videoId/maxresdefault.jpg";
+// Check and download the thumbnail image in order of preference
 $thumbnailPath = __DIR__ . "/downloads/" . $safeTitle . ".jpg";
-file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl));
+$thumbnailUrls = [
+    "https://img.youtube.com/vi/$videoId/maxresdefault.jpg",  // High resolution
+    "https://img.youtube.com/vi/$videoId/hqdefault.jpg",   // Medium resolution
+    "https://img.youtube.com/vi/$videoId/mqdefault.jpg",   // Low resolution
+    "https://img.youtube.com/vi/$videoId/sddefault.jpg"    // Standard resolution
+];
+
+// Try to download each version
+$thumbnailDownloaded = false;
+foreach ($thumbnailUrls as $thumbnailUrl) {
+    if (@file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl))) {
+        $thumbnailDownloaded = true;
+        break; // Stop once we successfully download one
+    }
+}
+
+// Check if the thumbnail was successfully downloaded
+if (!$thumbnailDownloaded) {
+    error_log("Failed to download thumbnail from all sources.");
+    http_response_code(500);
+    die("Error: Failed to download thumbnail.");
+}
 
 // Path for the new MP3 file with embedded thumbnail
 $outputWithThumbnail = __DIR__ . "/downloads/" . $safeTitle . "_with_thumbnail.mp3";
 
-// Use FFmpeg to embed the thumbnail into the MP3 file
+// Use FFmpeg to embed the thumbnail into the MP3 file, set metadata
 $ffmpegCommand = sprintf(
-    'ffmpeg -i %s -i %s -map 0:0 -map 1:0 -c copy -metadata:s:v title="Album Art" -metadata:s:v comment="Cover (front)" -id3v2_version 3 %s 2>&1',
+    'ffmpeg -i %s -i %s -map 0:0 -map 1:0 -c copy -metadata title="%s" -metadata artist="%s" -metadata:s:v title="Album Art" -metadata:s:v comment="Cover (front)" -id3v2_version 3 %s 2>&1',
     escapeshellarg($outputFile),
     escapeshellarg($thumbnailPath),
+    escapeshellarg($videoTitle),
+    escapeshellarg("YouTube Video Author"),  // Author name (could be retrieved via yt-dlp too)
     escapeshellarg($outputWithThumbnail)
 );
 
