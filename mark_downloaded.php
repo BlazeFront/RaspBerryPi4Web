@@ -75,7 +75,7 @@ $safeTitle = preg_replace('/[\/:*?"<>|]/', '', $videoTitle);
 $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
 
 // Check if the file already exists
-/*if (file_exists($outputFile)) {
+if (file_exists($outputFile)) {
     // Serve the MP3 file immediately
     header('Content-Type: audio/mpeg');
     header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
@@ -95,7 +95,7 @@ $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
     }
     
     exit();
-}*/
+}
 
 echo("URL: " . escapeshellarg($cleanUrl));
 echo("TITLE: " . escapeshellarg($outputFile));
@@ -105,9 +105,9 @@ if (!is_dir(__DIR__ . '/downloads')) {
     mkdir(__DIR__ . '/downloads', 0777, true);
 }
 
-// Download the MP3
+// Download the MP3 without embedding the thumbnail
 $command = sprintf(
-    'yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 --embed-thumbnail --add-metadata -o %s %s 2>&1',
+    'yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 --add-metadata -o %s %s 2>&1',
     escapeshellarg($outputFile),
     escapeshellarg($cleanUrl)
 );
@@ -118,6 +118,31 @@ if (!file_exists($outputFile)) {
     error_log("MP3 file could not be created. Command: " . $command . " Output: " . $output);
     http_response_code(500);
     die("Error: MP3 file could not be created.");
+}
+
+// Download the thumbnail image
+$thumbnailUrl = "https://img.youtube.com/vi/$videoId/maxresdefault.jpg";
+$thumbnailPath = __DIR__ . "/downloads/" . $safeTitle . ".jpg";
+file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl));
+
+// Path for the new MP3 file with embedded thumbnail
+$outputWithThumbnail = __DIR__ . "/downloads/" . $safeTitle . "_with_thumbnail.mp3";
+
+// Use FFmpeg to embed the thumbnail into the MP3 file
+$ffmpegCommand = sprintf(
+    'ffmpeg -i %s -i %s -map 0:0 -map 1:0 -c copy -metadata:s:v title="Album Art" -metadata:s:v comment="Cover (front)" -id3v2_version 3 %s 2>&1',
+    escapeshellarg($outputFile),
+    escapeshellarg($thumbnailPath),
+    escapeshellarg($outputWithThumbnail)
+);
+
+$ffmpegOutput = shell_exec($ffmpegCommand);
+
+// Check if FFmpeg command worked
+if (!file_exists($outputWithThumbnail)) {
+    error_log("FFmpeg failed to embed thumbnail. Command: " . $ffmpegCommand . " Output: " . $ffmpegOutput);
+    http_response_code(500);
+    die("Error: Failed to embed thumbnail into MP3.");
 }
 
 // Update database to mark download as completed
@@ -132,11 +157,11 @@ if ($updateStmt) {
     error_log("Failed to prepare update statement: " . $conn->error);
 }
 
-// Serve the MP3 file after downloading
+// Serve the MP3 file with the embedded thumbnail
 header('Content-Type: audio/mpeg');
-header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
-header('Content-Length: ' . filesize($outputFile));
-readfile($outputFile);
+header('Content-Disposition: attachment; filename="' . basename($outputWithThumbnail) . '"');
+header('Content-Length: ' . filesize($outputWithThumbnail));
+readfile($outputWithThumbnail);
 
 $conn->close();
 exit();
