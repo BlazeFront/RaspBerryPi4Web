@@ -75,8 +75,7 @@ $safeTitle = preg_replace('/[\/:*?"<>|]/', '', $videoTitle);
 $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
 
 // Check if the file already exists
-/*
-if (file_exists($outputFile)) {
+/*if (file_exists($outputFile)) {
     // Serve the MP3 file immediately
     header('Content-Type: audio/mpeg');
     header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
