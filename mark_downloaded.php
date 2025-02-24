@@ -130,7 +130,7 @@ $outputWithThumbnail = __DIR__ . "/downloads/" . $safeTitle . "_with_thumbnail.m
 
 // Use FFmpeg to embed the thumbnail into the MP3 file
 $ffmpegCommand = sprintf(
-    'ffmpeg -i %s -i %s -map 0:0 -map 1:0 -c copy -metadata:s:v title="Album Art" -metadata:s:v comment="Cover (front)" -id3v2_version 3 %s 2>&1',
+    'ffmpeg -i %s -i %s -map 0:0 -map 1:0 -c copy -metadata:s:v title="Album Art" -metadata:s:v comment="Cover (front)" %s 2>&1',
     escapeshellarg($outputFile),
     escapeshellarg($thumbnailPath),
     escapeshellarg($outputWithThumbnail)
