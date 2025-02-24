@@ -23,7 +23,7 @@ $data = json_decode(file_get_contents('php://input'), true);
 
 if (isset($data['url']) && isset($data['downloaded'])) {
     $url = $data['url'];
-    $downloaded = $data['downloaded'];
+    $downloaded = 0;
     $name = "Unknown Title"; // Default title if yt-dlp fails
 
     // Parse the URL and get the video ID
