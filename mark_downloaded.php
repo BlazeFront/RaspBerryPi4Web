@@ -22,6 +22,7 @@ if ($conn->connect_error) {
 // Get the video ID from the query string
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $videoTitle = isset($_GET['title']) ? (String)$_GET['title'] : "failed";
+$redownload = isset($_GET['redownload']) ? (int)$_GET['redownload'] : 0;
 
 if (!$id) {
     error_log("Invalid ID parameter provided.");
@@ -75,7 +76,7 @@ $safeTitle = preg_replace('/[\/:*?"<>|]/', '', $videoTitle);
 $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
 
 // Check if the file already exists
-if (file_exists($outputFile)) {
+if (file_exists($outputFile) && $redownload == 0) {
     // Serve the MP3 file immediately
     header('Content-Type: audio/mpeg');
     header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');

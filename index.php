@@ -388,7 +388,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
             // Iterate over each row and trigger markDownloaded for each entry
             rows.forEach((row) => {
-                markDownloaded(parseInt(row.querySelector('.download-icon').getAttribute('value').replace("\"","")), row.querySelector('.download-icon')); // Call markDownloaded for each entry
+                markDownloaded(parseInt(row.querySelector('.download-icon').getAttribute('value').replace("\"","")), row.querySelector('.download-icon'), null, 0); // Call markDownloaded for each entry
             });
 
             // Reset the button icon after processing
@@ -435,7 +435,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         }
 
         // Updated markDownloaded function for each entry
-        function markDownloaded(id, title, element) {
+        function markDownloaded(id, title, element, redownload) {
             if (!id || !element || !title) {
                 return;
             }
@@ -450,7 +450,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             // Create the request to mark the download
             var xhr = new XMLHttpRequest();
             // test
-            xhr.open('GET', 'http://192.168.0.147:8090/RaspBerryPi4Web/mark_downloaded.php?id=' + id + '&title=' + encodedTitle, true);
+            xhr.open('GET', 'http://192.168.0.147:8090/RaspBerryPi4Web/mark_downloaded.php?id=' + id + '&title=' + encodedTitle + "&redownload=" + redownload, true);
             xhr.responseType = 'blob'; // Expect a binary file response
             xhr.onload = function () {
                 if (xhr.status === 200) {
