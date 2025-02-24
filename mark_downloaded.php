@@ -75,7 +75,7 @@ $safeTitle = preg_replace('/[\/:*?"<>|]/', '', $videoTitle);
 $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
 
 // Check if the file already exists
-/*if (file_exists($outputFile)) {
+if (file_exists($outputFile)) {
     // Serve the MP3 file immediately
     header('Content-Type: audio/mpeg');
     header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
@@ -95,7 +95,7 @@ $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
     }
     
     exit();
-}*/
+}
 
 echo("URL: " . escapeshellarg($cleanUrl));
 echo("TITLE: " . escapeshellarg($outputFile));
@@ -121,7 +121,7 @@ if (!file_exists($outputFile)) {
 }
 
 // Download the thumbnail image
-$thumbnailUrl = "https://img.youtube.com/vi/$videoId/hqdefault.jpg";
+$thumbnailUrl = "https://img.youtube.com/vi/$videoId/maxresdefault.jpg";
 $thumbnailPath = __DIR__ . "/downloads/" . $safeTitle . ".jpg";
 file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl));
 
