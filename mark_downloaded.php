@@ -120,10 +120,22 @@ if (!file_exists($outputFile)) {
     die("Error: MP3 file could not be created.");
 }
 
-// Download the thumbnail image
-$thumbnailUrl = "https://img.youtube.com/vi/$videoId/maxresdefault.jpg";
+// Use yt-dlp to download the thumbnail and save it locally
 $thumbnailPath = __DIR__ . "/downloads/" . $safeTitle . ".jpg";
-file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl));
+$thumbnailCommand = sprintf(
+    'yt-dlp --skip-download --write-thumbnail --output "%s" %s 2>&1',
+    escapeshellarg($thumbnailPath),
+    escapeshellarg($cleanUrl)
+);
+
+$thumbnailOutput = shell_exec($thumbnailCommand);
+
+// Check if the thumbnail was downloaded
+if (!file_exists($thumbnailPath)) {
+    error_log("Failed to download thumbnail. Command: " . $thumbnailCommand . " Output: " . $thumbnailOutput);
+    http_response_code(500);
+    die("Error: Failed to download thumbnail.");
+}
 
 // Path for the new MP3 file with embedded thumbnail
 $outputWithThumbnail = __DIR__ . "/downloads/" . $safeTitle . "_with_thumbnail.mp3";
