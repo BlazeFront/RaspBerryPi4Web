@@ -340,7 +340,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
             rows.forEach(row => {
                 var newRow = document.createElement("tr");
-                if (row.downloaded) {
+                if (row.downloaded == 1) {
                     newRow.innerHTML = `
                         <td class='remove-field' onclick='removeFromDatabase("${row.id}", this)'><i class='fa-solid fa-angles-left'></i></td>
                         <td class='url-cell' onclick='copyToClipboard("${row.name}")'>${row.name}</td>
