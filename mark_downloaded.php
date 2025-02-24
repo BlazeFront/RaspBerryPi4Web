@@ -120,19 +120,27 @@ if (!file_exists($outputFile)) {
     die("Error: MP3 file could not be created.");
 }
 
-// Use yt-dlp to download the thumbnail and save it locally
+// Check and download the thumbnail image in order of preference
 $thumbnailPath = __DIR__ . "/downloads/" . $safeTitle . ".jpg";
-$thumbnailCommand = sprintf(
-    'yt-dlp --skip-download --write-thumbnail --output "%s" %s 2>&1',
-    escapeshellarg($thumbnailPath),
-    escapeshellarg($cleanUrl)
-);
+$thumbnailUrls = [
+    "https://img.youtube.com/vi/$videoId/maxresdefault.jpg",  // High resolution
+    "https://img.youtube.com/vi/$videoId/hqdefault.jpg",   // Medium resolution
+    "https://img.youtube.com/vi/$videoId/mqdefault.jpg",   // Low resolution
+    "https://img.youtube.com/vi/$videoId/sddefault.jpg"    // Standard resolution
+];
 
-$thumbnailOutput = shell_exec($thumbnailCommand);
+// Try to download each version
+$thumbnailDownloaded = false;
+foreach ($thumbnailUrls as $thumbnailUrl) {
+    if (@file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl))) {
+        $thumbnailDownloaded = true;
+        break; // Stop once we successfully download one
+    }
+}
 
-// Check if the thumbnail was downloaded
-if (!file_exists($thumbnailPath)) {
-    error_log("Failed to download thumbnail. Command: " . $thumbnailCommand . " Output: " . $thumbnailOutput);
+// Check if the thumbnail was successfully downloaded
+if (!$thumbnailDownloaded) {
+    error_log("Failed to download thumbnail from all sources.");
     http_response_code(500);
     die("Error: Failed to download thumbnail.");
 }
