@@ -75,7 +75,7 @@ $safeTitle = preg_replace('/[\/:*?"<>|]/', '', $videoTitle);
 $outputFile = __DIR__ . "/downloads/" . $safeTitle . ".mp3";
 
 // Check if the file already exists
-if (file_exists($outputFile)) {
+if (file_exists($outputFile) && false) {
     // Serve the MP3 file immediately
     header('Content-Type: audio/mpeg');
     header('Content-Disposition: attachment; filename="' . basename($outputFile) . '"');
@@ -120,30 +120,10 @@ if (!file_exists($outputFile)) {
     die("Error: MP3 file could not be created.");
 }
 
-// Check and download the thumbnail image in order of preference
+// Download the thumbnail image
+$thumbnailUrl = "https://img.youtube.com/vi/$videoId/hqdefault.jpg";
 $thumbnailPath = __DIR__ . "/downloads/" . $safeTitle . ".jpg";
-$thumbnailUrls = [
-    "https://img.youtube.com/vi/$videoId/maxresdefault.jpg",  // High resolution
-    "https://img.youtube.com/vi/$videoId/hqdefault.jpg",   // Medium resolution
-    "https://img.youtube.com/vi/$videoId/mqdefault.jpg",   // Low resolution
-    "https://img.youtube.com/vi/$videoId/sddefault.jpg"    // Standard resolution
-];
-
-// Try to download each version
-$thumbnailDownloaded = false;
-foreach ($thumbnailUrls as $thumbnailUrl) {
-    if (@file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl))) {
-        $thumbnailDownloaded = true;
-        break; // Stop once we successfully download one
-    }
-}
-
-// Check if the thumbnail was successfully downloaded
-if (!$thumbnailDownloaded) {
-    error_log("Failed to download thumbnail from all sources.");
-    http_response_code(500);
-    die("Error: Failed to download thumbnail.");
-}
+file_put_contents($thumbnailPath, file_get_contents($thumbnailUrl));
 
 // Path for the new MP3 file with embedded thumbnail
 $outputWithThumbnail = __DIR__ . "/downloads/" . $safeTitle . "_with_thumbnail.mp3";
