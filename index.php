@@ -336,7 +336,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
         function updateTable(rows) {
             var tbody = document.querySelector('tbody');
-            tbody.innerHTML = ""; // Clear existing content
+            tbody.innerHTML = ""; // Clear existing content test
 
             rows.forEach(row => {
                 var newRow = document.createElement("tr");
