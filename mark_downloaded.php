@@ -107,7 +107,7 @@ if (!is_dir(__DIR__ . '/downloads')) {
 
 // Download the MP3
 $command = sprintf(
-    'yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 --embed-thumbnail --add-metadata -o %s %s 2>&1',
+    'yt-dlp -f bestaudio --extract-audio --audio-format mp3 --audio-quality 0 --embed-thumbnail --add-metadata --id3v2-version 3 -o %s %s 2>&1',
     escapeshellarg($outputFile),
     escapeshellarg($cleanUrl)
 );
