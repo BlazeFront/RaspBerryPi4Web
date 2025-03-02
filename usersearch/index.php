@@ -43,13 +43,26 @@ if (isset($_GET['q'])) {
     }
 
     // Now crawl the web for each username.
-    $crawlResults = [];
+    $allResults = [];  // This will hold both usernames and web mentions
     foreach ($usernames as $username) {
-        $crawlResults[$username] = crawlWebForUsername($username);
+        // Add username to the top of the list
+        $allResults[] = ["title" => "Username: " . htmlspecialchars($username), "link" => "#"];
+        
+        // Crawl the web for the username mentions
+        $webResults = crawlWebForUsername($username);
+        if (!empty($webResults)) {
+            foreach ($webResults as $result) {
+                // Add the web mention results under the username
+                $allResults[] = $result;
+            }
+        } else {
+            // If no web results found, add a message
+            $allResults[] = ["title" => "No relevant mentions found for: " . htmlspecialchars($username), "link" => "#"];
+        }
     }
 } else {
     $usernames = [];
-    $crawlResults = [];
+    $allResults = [];
 }
 ?>
 
@@ -72,33 +85,21 @@ if (isset($_GET['q'])) {
     </form>
     
     <div class="result">
-        <?php if (!empty($usernames)): ?>
-            <h3>Usernames Found:</h3>
+        <?php if (!empty($allResults)): ?>
+            <h3>Search Results:</h3>
             <ul>
-                <?php foreach ($usernames as $username): ?>
-                    <li><?php echo htmlspecialchars($username); ?></li>
+                <?php foreach ($allResults as $result): ?>
+                    <li>
+                        <?php if ($result['link'] == '#'): ?>
+                            <strong><?php echo htmlspecialchars($result['title']); ?></strong>
+                        <?php else: ?>
+                            <a href="<?php echo htmlspecialchars($result['link']); ?>" target="_blank"><?php echo htmlspecialchars($result['title']); ?></a>
+                        <?php endif; ?>
+                    </li>
                 <?php endforeach; ?>
             </ul>
-        <?php endif; ?>
-    </div>
-    
-    <div class="crawl-results">
-        <?php if (!empty($crawlResults)): ?>
-            <h3>Web Crawling Results:</h3>
-            <?php foreach ($crawlResults as $username => $results): ?>
-                <h4>Results for "<?php echo htmlspecialchars($username); ?>":</h4>
-                <?php if (!empty($results)): ?>
-                    <ul>
-                        <?php foreach ($results as $result): ?>
-                            <li class="crawl-link">
-                                <a href="<?php echo htmlspecialchars($result['link']); ?>" target="_blank"><?php echo htmlspecialchars($result['title']); ?></a>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php else: ?>
-                    <p>No results found for <?php echo htmlspecialchars($username); ?>.</p>
-                <?php endif; ?>
-            <?php endforeach; ?>
+        <?php else: ?>
+            <p>No results found.</p>
         <?php endif; ?>
     </div>
 </body>
