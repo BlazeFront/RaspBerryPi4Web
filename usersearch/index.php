@@ -1,17 +1,45 @@
 <?php
-// index.php - Main page for enhanced username search
+if (isset($_GET['q'])) {
+    $query = urlencode($_GET['q']);
+    $url = "https://namemc.com/search?q=$query";
+    
+    $html = file_get_contents($url);
+    
+    if ($html !== false) {
+        preg_match_all('/<a class="card-title" href="\/profile\/([^"]+)">/', $html, $matches);
+        $usernames = $matches[1] ?? [];
+    } else {
+        $usernames = ['Error fetching data'];
+    }
+} else {
+    $usernames = [];
+}
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Advanced Username Search</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>Username Search</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .search-box { width: 400px; padding: 10px; }
+        .result { margin-top: 20px; }
+    </style>
 </head>
 <body>
-    <h1>Search for a Username</h1>
-    <form action="search.php" method="GET">
-        <input type="text" name="username" placeholder="Enter username" required>
+    <form method="GET">
+        <input type="text" name="q" class="search-box" placeholder="Search usernames..." value="<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>">
         <button type="submit">Search</button>
     </form>
+    
+    <div class="result">
+        <?php if (!empty($usernames)): ?>
+            <ul>
+                <?php foreach ($usernames as $username): ?>
+                    <li><?php echo htmlspecialchars($username); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
 </body>
 </html>
