@@ -1,10 +1,10 @@
 <?php
-// index.php - Main search page for custom username search engine
+// index.php - Main page for enhanced username search
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Username Search Engine</title>
+    <title>Advanced Username Search</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
