@@ -1,36 +1,36 @@
 <?php
-// Enable error reporting for debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// Function to fetch past usernames from crafty.gg
+function fetchUsernames($username) {
+    $url = "https://crafty.gg/@$username";
+    $html = fetchURL($url);
 
-// Check if cURL is available on the server
-if (!function_exists('curl_init')) {
-    die('cURL is not enabled on this server.');
-}
-
-// Function to fetch content using cURL with better error handling
-function fetchContentUsingCurl($url) {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);  // Follow redirects
-    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-    
-    // Execute the request
-    $response = curl_exec($ch);
-
-    // Check for cURL errors
-    if(curl_errno($ch)) {
-        echo 'cURL error: ' . curl_error($ch);
+    if (!$html) {
+        return ['Error fetching data'];
     }
 
-    // Close the cURL session
+    preg_match_all('/<a href="\/players\?search=([^"]+)">(\d+)\. <b>([^<]+)<\/b><\/a>/', $html, $matches);
+    return $matches[3] ?? ['No usernames found'];
+}
+
+// Function to fetch content using cURL
+function fetchURL($url) {
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36");
+    $response = curl_exec($ch);
+    $error = curl_error($ch);
     curl_close($ch);
+
+    if ($error) {
+        echo "<p style='color: red;'>cURL Error: $error</p>";
+        return false;
+    }
 
     return $response;
 }
 
-// Function to crawl the web for username
+// Function to crawl search engines for mentions of a username
 function crawlWebForUsername($username) {
     $searchEngines = [
         "https://html.duckduckgo.com/html?q=" . urlencode($username),
@@ -40,25 +40,19 @@ function crawlWebForUsername($username) {
 
     $results = [];
 
-    // Loop through search engines
     foreach ($searchEngines as $engine) {
-        // Fetch the HTML content of the search engine page
-        $html = fetchContentUsingCurl($engine);
-        if (!$html) continue;
-
-        // Parse the result links from the HTML
-        if (strpos($engine, "duckduckgo.com") !== false) {
-            preg_match_all('/<a class="result__a" href="([^"]+)">/', $html, $matches, PREG_PATTERN_ORDER);
-        } elseif (strpos($engine, "yahoo.com") !== false) {
-            preg_match_all('/<a class="d-of-v1" href="([^"]+)"/', $html, $matches, PREG_PATTERN_ORDER);
-        } elseif (strpos($engine, "google.com") !== false) {
-            preg_match_all('/<a href="\/url\?q=([^"&]+)&amp;/i', $html, $matches, PREG_PATTERN_ORDER);
+        $html = fetchURL($engine);
+        if (!$html) {
+            continue;
         }
 
-        // Add matches to results
+        preg_match_all('/<a href="(https?:\/\/[^"]+)"/', $html, $matches, PREG_PATTERN_ORDER);
         foreach ($matches[1] as $link) {
-            if (filter_var($link, FILTER_VALIDATE_URL)) {
-                $results[] = $link;
+            if (strpos($link, 'duckduckgo.com') === false && strpos($link, 'yahoo.com') === false && strpos($link, 'google.com') === false) {
+                $results[] = [
+                    "title" => $link,
+                    "link" => $link
+                ];
             }
         }
     }
@@ -66,47 +60,21 @@ function crawlWebForUsername($username) {
     return $results;
 }
 
-// Process the query parameter and fetch data
-if (isset($_GET['q'])) {
-    $query = urlencode($_GET['q']);
-    $url = "https://crafty.gg/@$query";
+// Handle user input
+$username = $_GET['q'] ?? '';
+$usernames = $username ? fetchUsernames($username) : [];
+$searchResults = [];
 
-    // Fetch the HTML content of the crafty.gg page
-    $html = fetchContentUsingCurl($url);
-
-    if ($html !== false) {
-        preg_match_all('/<a href="\/players\?search=([^"]+)">[\d]+\. <b>([^<]+)<\/b><\/a>/', $html, $matches);
-        $usernames = $matches[2] ?? [];
-    } else {
-        $usernames = ['Error fetching data'];
-    }
-
-    // Crawl the web for mentions of each username
-    $allResults = [];
-    foreach ($usernames as $username) {
-        // Add the username itself to the results list
-        $allResults[] = ["title" => "Username: " . htmlspecialchars($username), "link" => "#"];
-
-        // Fetch web mentions for the username
-        $webResults = crawlWebForUsername($username);
-        if (!empty($webResults)) {
-            foreach ($webResults as $result) {
-                $allResults[] = ["title" => $result, "link" => $result];
-            }
-        } else {
-            $allResults[] = ["title" => "No relevant mentions found for: " . htmlspecialchars($username), "link" => "#"];
-        }
-    }
-} else {
-    $usernames = [];
-    $allResults = [];
+foreach ($usernames as $user) {
+    $searchResults = array_merge($searchResults, crawlWebForUsername($user));
 }
+
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Username Search</title>
+    <title>Username Tracker</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .search-box { width: 400px; padding: 10px; }
@@ -115,28 +83,29 @@ if (isset($_GET['q'])) {
 </head>
 <body>
     <form method="GET">
-        <input type="text" name="q" class="search-box" placeholder="Search usernames..." value="<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>">
+        <input type="text" name="q" class="search-box" placeholder="Enter Minecraft Username..." value="<?php echo htmlspecialchars($username); ?>">
         <button type="submit">Search</button>
     </form>
-    
+
     <div class="result">
-        <?php if (!empty($allResults)): ?>
-            <h3>Search Results:</h3>
+        <?php if (!empty($usernames)): ?>
+            <h2>Past Usernames:</h2>
             <ul>
-                <?php foreach ($allResults as $result): ?>
-                    <li>
-                        <?php if ($result['link'] == '#'): ?>
-                            <strong><?php echo htmlspecialchars($result['title']); ?></strong>
-                        <?php else: ?>
-                            <a href="<?php echo htmlspecialchars($result['link']); ?>" target="_blank">
-                                <strong><?php echo htmlspecialchars($result['title']); ?></strong>
-                            </a>
-                        <?php endif; ?>
-                    </li>
+                <?php foreach ($usernames as $name): ?>
+                    <li><?php echo htmlspecialchars($name); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+        <?php if (!empty($searchResults)): ?>
+            <h2>Web Mentions & Forum Profiles:</h2>
+            <ul>
+                <?php foreach ($searchResults as $result): ?>
+                    <li><a href="<?php echo htmlspecialchars($result['link']); ?>" target="_blank"><?php echo htmlspecialchars($result['title']); ?></a></li>
                 <?php endforeach; ?>
             </ul>
         <?php else: ?>
-            <p>No results found.</p>
+            <p>No relevant mentions found.</p>
         <?php endif; ?>
     </div>
 </body>
