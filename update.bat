@@ -29,6 +29,8 @@ echo =====================================
 echo.
 echo Commit and push completed.
 echo.
+echo =====================================
+echo.
 pause
 goto loop
 
