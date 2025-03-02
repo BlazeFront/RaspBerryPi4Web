@@ -1,5 +1,5 @@
 <?php
-// search.php - Processes the username search and finds linked accounts dynamically
+// search.php - Processes the username search and finds linked accounts
 include 'functions.php';
 
 if (isset($_GET['username'])) {
@@ -7,7 +7,7 @@ if (isset($_GET['username'])) {
     
     echo "<h1>Results for: $username</h1>";
 
-    // Find alt accounts using NameMC
+    // Find linked accounts from NameMC and similar sources
     echo "<h2>Possible Alt Accounts:</h2>";
     $altAccounts = fetchAltAccounts($username);
     if (!empty($altAccounts)) {
@@ -20,9 +20,9 @@ if (isset($_GET['username'])) {
         echo "<p>No linked accounts found.</p>";
     }
 
-    // Crawl the web for mentions of the username
-    echo "<h2>Web Mentions & Forum Profiles:</h2>";
-    $results = crawlWebForUsername($username);
+    // Search for user activity across forums/social platforms
+    echo "<h2>Forum & Social Media Mentions:</h2>";
+    $results = searchUsernameOnSites($username);
     if (!empty($results)) {
         echo "<ul>";
         foreach ($results as $result) {
