@@ -1,4 +1,15 @@
 <?php
+function fetchContentUsingCurl($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);  // Follow redirects
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+    $response = curl_exec($ch);
+    curl_close($ch);
+    return $response;
+}
+
 function crawlWebForUsername($username) {
     // Define search engine URLs for crawling.
     $searchEngines = [
@@ -11,8 +22,8 @@ function crawlWebForUsername($username) {
 
     // Loop through each search engine URL
     foreach ($searchEngines as $engine) {
-        // Fetch the HTML content of the search engine results page.
-        $html = @file_get_contents($engine);
+        // Fetch the HTML content of the search engine results page using cURL
+        $html = fetchContentUsingCurl($engine);
         if (!$html) continue;  // If the HTML couldn't be fetched, skip this engine.
 
         // Now parse the actual search result links. We need to capture real results.
@@ -32,7 +43,7 @@ function crawlWebForUsername($username) {
             // Ensure we only include real web results
             if (filter_var($link, FILTER_VALIDATE_URL)) {
                 // Fetch the page content of the result link
-                $pageHtml = @file_get_contents($link);
+                $pageHtml = fetchContentUsingCurl($link);
                 
                 // If the page was successfully fetched
                 if ($pageHtml) {
@@ -62,7 +73,7 @@ if (isset($_GET['q'])) {
     $query = urlencode($_GET['q']);
     $url = "https://crafty.gg/@$query";
     
-    $html = file_get_contents($url);
+    $html = fetchContentUsingCurl($url);
     
     if ($html !== false) {
         preg_match_all('/<a href="\/players\?search=([^"]+)">[\d]+\. <b>([^<]+)<\/b><\/a>/', $html, $matches);
