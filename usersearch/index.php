@@ -8,6 +8,7 @@ function crawlWebForUsername($username) {
     ];
 
     $results = [];
+    
     // Loop through each search engine URL
     foreach ($searchEngines as $engine) {
         // Fetch the HTML content of the search engine results page.
@@ -21,8 +22,26 @@ function crawlWebForUsername($username) {
         foreach ($matches[1] as $link) {
             // Avoid links from the search engines' own pages (i.e., DuckDuckGo, Yahoo)
             if (strpos($link, 'duckduckgo.com') === false && strpos($link, 'yahoo.com') === false) {
-                // Add the link to the results array
-                $results[] = ["title" => "Found on: " . parse_url($link, PHP_URL_HOST), "link" => $link];
+                // Fetch the page content of the result link
+                $pageHtml = @file_get_contents($link);
+                
+                // If the page was successfully fetched
+                if ($pageHtml) {
+                    // Extract the page title using regex
+                    preg_match('/<title>([^<]+)<\/title>/', $pageHtml, $titleMatch);
+                    $title = $titleMatch[1] ?? 'No title found';
+
+                    // Extract a meta description using regex (if available)
+                    preg_match('/<meta name="description" content="([^"]+)"/', $pageHtml, $descMatch);
+                    $description = $descMatch[1] ?? 'No description found';
+
+                    // Add this page's info to the results array
+                    $results[] = [
+                        'title' => htmlspecialchars($title), 
+                        'link' => $link,
+                        'description' => htmlspecialchars($description)
+                    ];
+                }
             }
         }
     }
@@ -47,8 +66,8 @@ if (isset($_GET['q'])) {
     $allResults = [];  // This will hold both usernames and web mentions
     foreach ($usernames as $username) {
         // Add username to the top of the list
-        $allResults[] = ["title" => "Username: " . htmlspecialchars($username), "link" => "#"];
-        
+        $allResults[] = ["title" => "Username: " . htmlspecialchars($username), "link" => "#", 'description' => ''];
+
         // Crawl the web for the username mentions
         $webResults = crawlWebForUsername($username);
         if (!empty($webResults)) {
@@ -58,7 +77,7 @@ if (isset($_GET['q'])) {
             }
         } else {
             // If no web results found, add a message
-            $allResults[] = ["title" => "No relevant mentions found for: " . htmlspecialchars($username), "link" => "#"];
+            $allResults[] = ["title" => "No relevant mentions found for: " . htmlspecialchars($username), "link" => "#", 'description' => ''];
         }
     }
 } else {
@@ -93,8 +112,12 @@ if (isset($_GET['q'])) {
                     <li>
                         <?php if ($result['link'] == '#'): ?>
                             <strong><?php echo htmlspecialchars($result['title']); ?></strong>
+                            <p><?php echo htmlspecialchars($result['description']); ?></p>
                         <?php else: ?>
-                            <a href="<?php echo htmlspecialchars($result['link']); ?>" target="_blank"><?php echo htmlspecialchars($result['title']); ?></a>
+                            <a href="<?php echo htmlspecialchars($result['link']); ?>" target="_blank">
+                                <strong><?php echo htmlspecialchars($result['title']); ?></strong>
+                            </a>
+                            <p><?php echo htmlspecialchars($result['description']); ?></p>
                         <?php endif; ?>
                     </li>
                 <?php endforeach; ?>
