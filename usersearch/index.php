@@ -21,6 +21,7 @@ function crawlWebForUsername($username) {
         foreach ($matches[1] as $link) {
             // Avoid links from the search engines' own pages (i.e., DuckDuckGo, Yahoo)
             if (strpos($link, 'duckduckgo.com') === false && strpos($link, 'yahoo.com') === false) {
+                // Add the link to the results array
                 $results[] = ["title" => "Found on: " . parse_url($link, PHP_URL_HOST), "link" => $link];
             }
         }
