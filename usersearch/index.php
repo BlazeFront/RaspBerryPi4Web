@@ -8,20 +8,29 @@ function crawlWebForUsername($username) {
     ];
 
     $results = [];
-    
+
     // Loop through each search engine URL
     foreach ($searchEngines as $engine) {
         // Fetch the HTML content of the search engine results page.
         $html = @file_get_contents($engine);
         if (!$html) continue;  // If the HTML couldn't be fetched, skip this engine.
 
-        // Use regex to extract all links from the HTML.
-        preg_match_all('/<a href=\"(https?:\/\/[^"]+)\"/', $html, $matches, PREG_PATTERN_ORDER);
+        // Now parse the actual search result links. We need to capture real results.
+        if (strpos($engine, "duckduckgo.com") !== false) {
+            // DuckDuckGo result extraction
+            preg_match_all('/<a class="result__a" href="([^"]+)">/', $html, $matches, PREG_PATTERN_ORDER);
+        } elseif (strpos($engine, "yahoo.com") !== false) {
+            // Yahoo result extraction
+            preg_match_all('/<a class="d-of-v1" href="([^"]+)"/', $html, $matches, PREG_PATTERN_ORDER);
+        } elseif (strpos($engine, "google.com") !== false) {
+            // Google result extraction
+            preg_match_all('/<a href="\/url\?q=([^"&]+)&amp;/i', $html, $matches, PREG_PATTERN_ORDER);
+        }
 
-        // Loop through the extracted links and add them to the results if they aren't from the search engines themselves.
+        // Loop through the extracted links and add them to the results
         foreach ($matches[1] as $link) {
-            // Avoid links from the search engines' own pages (i.e., DuckDuckGo, Yahoo)
-            if (strpos($link, 'duckduckgo.com') === false && strpos($link, 'yahoo.com') === false) {
+            // Ensure we only include real web results
+            if (filter_var($link, FILTER_VALIDATE_URL)) {
                 // Fetch the page content of the result link
                 $pageHtml = @file_get_contents($link);
                 
