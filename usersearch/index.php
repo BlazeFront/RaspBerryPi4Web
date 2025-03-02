@@ -6,8 +6,8 @@ if (isset($_GET['q'])) {
     $html = file_get_contents($url);
     
     if ($html !== false) {
-        preg_match_all('/<a class="card-title" href="\/profile\/([^"]+)">/', $html, $matches);
-        $usernames = $matches[1] ?? [];
+        preg_match_all('/<a class="" translate="no" href="\/search\?q=([^"]+)">([^"]+)<\/a>/', $html, $matches);
+        $usernames = $matches[2] ?? [];
     } else {
         $usernames = ['Error fetching data'];
     }
