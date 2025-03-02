@@ -1,36 +1,32 @@
 <?php
-// Function to fetch past usernames from crafty.gg
-function fetchUsernames($username) {
-    $url = "https://crafty.gg/@$username";
-    $html = fetchURL($url);
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-    if (!$html) {
-        return ['Error fetching data'];
-    }
+// Function to fetch content using cURL with improved headers and timeout handling
+function fetchContentUsingCurl($url) {
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT => 10,  // Set timeout
+        CURLOPT_USERAGENT => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    ]);
 
-    preg_match_all('/<a href="\/players\?search=([^"]+)">(\d+)\. <b>([^<]+)<\/b><\/a>/', $html, $matches);
-    return $matches[3] ?? ['No usernames found'];
-}
-
-// Function to fetch content using cURL
-function fetchURL($url) {
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36");
     $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
 
-    if ($error) {
-        echo "<p style='color: red;'>cURL Error: $error</p>";
-        return false;
+    if ($error || $httpCode >= 400) {
+        return false; // Return false on error or bad response
     }
-
+    
     return $response;
 }
 
-// Function to crawl search engines for mentions of a username
+// Function to crawl search engines for username mentions
 function crawlWebForUsername($username) {
     $searchEngines = [
         "https://html.duckduckgo.com/html?q=" . urlencode($username),
@@ -41,16 +37,22 @@ function crawlWebForUsername($username) {
     $results = [];
 
     foreach ($searchEngines as $engine) {
-        $html = fetchURL($engine);
-        if (!$html) {
-            continue;
-        }
+        $html = fetchContentUsingCurl($engine);
+        if (!$html) continue;
 
+        // Extract URLs from search results using different patterns
         preg_match_all('/<a href="(https?:\/\/[^"]+)"/', $html, $matches, PREG_PATTERN_ORDER);
+
         foreach ($matches[1] as $link) {
-            if (strpos($link, 'duckduckgo.com') === false && strpos($link, 'yahoo.com') === false && strpos($link, 'google.com') === false) {
+            // Ensure the link is valid and not pointing back to the search engine itself
+            if (
+                filter_var($link, FILTER_VALIDATE_URL) &&
+                !strpos($link, 'duckduckgo.com') &&
+                !strpos($link, 'yahoo.com') &&
+                !strpos($link, 'google.com')
+            ) {
                 $results[] = [
-                    "title" => $link,
+                    "title" => htmlspecialchars($link),
                     "link" => $link
                 ];
             }
@@ -60,7 +62,20 @@ function crawlWebForUsername($username) {
     return $results;
 }
 
-// Handle user input
+// Fetch past usernames from crafty.gg
+function fetchUsernames($username) {
+    $url = "https://crafty.gg/@$username";
+    $html = fetchContentUsingCurl($url);
+    
+    if (!$html) {
+        return ['Error fetching data'];
+    }
+
+    preg_match_all('/<a href="\/players\?search=([^"]+)">[\d]+\. <b>([^<]+)<\/b><\/a>/', $html, $matches);
+    return $matches[2] ?? ['No usernames found'];
+}
+
+// Process user input and search for usernames
 $username = $_GET['q'] ?? '';
 $usernames = $username ? fetchUsernames($username) : [];
 $searchResults = [];
