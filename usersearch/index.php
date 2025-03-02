@@ -1,12 +1,12 @@
 <?php
 if (isset($_GET['q'])) {
     $query = urlencode($_GET['q']);
-    $url = "https://namemc.com/search?q=$query";
+    $url = "https://crafty.gg/@$query";
     
     $html = file_get_contents($url);
     
     if ($html !== false) {
-        preg_match_all('/<a class="" translate="no" href="\/search\?q=([^"]+)">([^"]+)<\/a>/', $html, $matches);
+        preg_match_all('/<a href="\/players\?search=([^"]+)">[\d]+\. <b>([^<]+)<\/b><\/a>/', $html, $matches);
         $usernames = $matches[2] ?? [];
     } else {
         $usernames = ['Error fetching data'];
