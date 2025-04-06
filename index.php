@@ -436,7 +436,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
         // Updated markDownloaded function for each entry
         function markDownloaded(id, title, element) {
-            if (!id || !element || !title) {
+            if (!id || !title) {
                 return;
             }
             // Track ongoing downloads
