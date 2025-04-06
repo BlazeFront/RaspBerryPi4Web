@@ -454,12 +454,14 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             xhr.responseType = 'blob'; // Expect a binary file response
             xhr.onload = function () {
                 if (xhr.status === 200) {
-                    element.innerHTML = originalIcon;
-                    const downloadTd = element.closest('td');
-                    const parentRow = downloadTd.closest('tr');
-                    const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
-                    if (checkIcon) {
+                    if (element) {
+                        element.innerHTML = originalIcon;
+                        const downloadTd = element.closest('td');
+                        const parentRow = downloadTd.closest('tr');
+                        const checkIcon = parentRow.querySelector('.fa-regular.fa-square');
+                        if (checkIcon) {
                         checkIcon.className = "fa-solid fa-square-check";
+                        }
                     }
 
                     // Handle the binary file response (MP3 file)
@@ -481,7 +483,9 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
                     link.click();
                 }
                 else {
-                    element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fa-solid fa-download error");
+                    if (element) {
+                        element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fa-solid fa-download error");
+                    }
                     alert('Error downloading file with ID: ' + id);
                 }
 
@@ -489,7 +493,9 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             };
 
             xhr.onerror = function () {
-                element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fas fa-download error");
+                if (element) {
+                    element.innerHTML = originalIcon.replace("fa-solid fa-spinner fa-spin-pulse","fas fa-download error");
+                }
                 ongoingDownloads--; // Decrement on error
                 alert('Error downloading file with ID: ' + id);
             };
