@@ -336,8 +336,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 
         function escapeJsString(str) {
             return str.replace(/\\/g, '\\\\')
-                    .replace(/"/g, '\\"')
-                    .replace(/'/g, "\\'")
+                    .replace(/"/g, '.')
+                    .replace(/'/g, ".")
                     .replace(/\n/g, '\\n')
                     .replace(/\r/g, '\\r');
         }
