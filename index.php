@@ -341,22 +341,24 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
             rows.forEach(row => {
                 var newRow = document.createElement("tr");
                 if (row.downloaded == "1") {
+                    const safeName = JSON.stringify(row.name); // Safely escape quotes and special chars
                     newRow.innerHTML = `
                         <td class='remove-field' onclick='removeFromDatabase("${row.id}", this)'><i class='fa-solid fa-angles-left'></i></td>
-                        <td class='url-cell' onclick='copyToClipboard("${row.name}")'>${row.name}</td>
+                        <td class='url-cell' onclick='copyToClipboard(${safeName})'>${row.name}</td>
                         <td class='icon-cell' style='cursor:pointer' onclick='copyToClipboard("${row.url}")'><i class='fa-regular fa-copy'></i></td>
                         <td><i style='cursor:pointer' class='fa-solid fa-square-check' onclick='toggleDownloaded(${row.id}, this)'></i></td>
                         <td class='icon-cell'><a href='${row.url}' target='_blank'><i class='fab fa-youtube'></i></a></td>
-                        <td value='${row.id}' class='download-icon'><a href='javascript:void(0);' onclick='markDownloaded(${row.id}, "${row.name}", this)'><i class='fas fa-download'></i></a></td>
+                        <td value='${row.id}' class='download-icon'><a href='javascript:void(0);' onclick='markDownloaded(${row.id}, ${safeName}, this)'><i class='fas fa-download'></i></a></td>
                     `;
                 } else {
+                    const safeName = JSON.stringify(row.name);
                     newRow.innerHTML = `
                         <td class='remove-field' onclick='removeFromDatabase("${row.id}", this)'><i class='fa-solid fa-angles-left'></i></td>
-                        <td class='url-cell' onclick='copyToClipboard("${row.name}")'>${row.name}</td>
+                        <td class='url-cell' onclick='copyToClipboard(${safeName})'>${row.name}</td>
                         <td class='icon-cell' style='cursor:pointer' onclick='copyToClipboard("${row.url}")'><i class='fa-regular fa-copy'></i></td>
                         <td><i class='fa-regular fa-square' onclick='toggleDownloaded(${row.id}, this)'></i></td>
                         <td class='icon-cell'><a href='${row.url}' target='_blank'><i class='fab fa-youtube'></i></a></td>
-                        <td value='${row.id}' class='download-icon'><a href='javascript:void(0);' onclick='markDownloaded(${row.id}, "${row.name}", this)'><i class='fas fa-download'></i></a></td>
+                        <td value='${row.id}' class='download-icon'><a href='javascript:void(0);' onclick='markDownloaded(${row.id}, ${safeName}, this)'><i class='fas fa-download'></i></a></td>
                     `;
                 }
                 tbody.appendChild(newRow);
